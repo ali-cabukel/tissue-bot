@@ -7,11 +7,11 @@ from pathlib import Path
 
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.sqlite import insert
-from sqlalchemy.ext.asyncio import AsyncEngine, AsyncSession, async_sessionmaker
+from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.console import info, warn
+from backend.db.engine import get_engine, get_session_maker
 from backend.db.models import Base, Issue, IssueLabel, Repo, SyncLog
-from backend.db.session import create_engine, create_session_factory
 from backend.github.models import IssueRecord, RepoRecord
 from backend.settings import get_settings
 
@@ -23,11 +23,11 @@ def _now() -> str:
 class Database:
     def __init__(self, path: Path | None = None) -> None:
         self.path = path or get_settings().resolved_db_path
-        self._engine: AsyncEngine = create_engine(self.path)
-        self._sessions: async_sessionmaker[AsyncSession] = create_session_factory(self._engine)
+        self._engine = get_engine()
+        self._sessions = get_session_maker()
 
     async def close(self) -> None:
-        await self._engine.dispose()
+        pass
 
     async def init(self) -> Path:
         self.path.parent.mkdir(parents=True, exist_ok=True)
@@ -36,6 +36,9 @@ class Database:
             return self.path
 
         async with self._engine.begin() as conn:
+            # Import User so auth tables are included in metadata.
+            from backend.auth.models import User  # noqa: F401
+
             await conn.run_sync(Base.metadata.create_all)
         info(f"Created database: [bold]{self.path}[/bold]")
         return self.path

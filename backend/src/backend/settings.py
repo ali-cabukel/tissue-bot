@@ -6,7 +6,7 @@ import subprocess
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, SecretStr
+from pydantic import Field, SecretStr, field_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -34,6 +34,25 @@ class Settings(BaseSettings):
         default=None,
         validation_alias="TRACKED_REPOS_FILE",
     )
+    secret_key: SecretStr = Field(
+        default=SecretStr("change-me-in-production"),
+        validation_alias="SECRET_KEY",
+    )
+    jwt_lifetime_seconds: int = Field(default=3600, validation_alias="JWT_LIFETIME_SECONDS")
+    cors_origins: list[str] = Field(
+        default_factory=lambda: ["http://localhost:3000", "http://localhost:8000"],
+        validation_alias="CORS_ORIGINS",
+    )
+    api_host: str = Field(default="127.0.0.1", validation_alias="API_HOST")
+    api_port: int = Field(default=8000, validation_alias="API_PORT")
+    api_reload: bool = Field(default=False, validation_alias="API_RELOAD")
+
+    @field_validator("cors_origins", mode="before")
+    @classmethod
+    def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
+        if isinstance(value, str):
+            return [origin.strip() for origin in value.split(",") if origin.strip()]
+        return value
 
     @property
     def schema_path(self) -> Path:

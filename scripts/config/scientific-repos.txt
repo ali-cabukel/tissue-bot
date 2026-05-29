@@ -1,0 +1,21 @@
+# Scientific Python libraries — canonical GitHub repos to track
+# Format: owner/repo (lines starting with # are ignored)
+
+numpy/numpy
+pandas-dev/pandas
+matplotlib/matplotlib
+mwaskom/seaborn
+scikit-learn/scikit-learn
+scipy/scipy
+statsmodels/statsmodels
+dmlc/xgboost
+lightgbm-org/LightGBM
+pytorch/pytorch
+
+# Similar / related (uncomment to include)
+# pydata/xarray
+# pola-io/polars
+# numba/numba
+# joblib/joblib
+# sympy/sympy
+# huggingface/transformers

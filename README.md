@@ -12,6 +12,9 @@ uv venv && source .venv/bin/activate && uv sync
 tissue init-db
 tissue collect-tracked --issue-limit 50
 
+# HTTP API
+tissue-api   # http://127.0.0.1:8000/docs
+
 # Or shell scripts from repo root
 chmod +x scripts/*.sh
 ./scripts/init-db.sh
@@ -47,6 +50,6 @@ Scientific Python libraries — `scripts/config/scientific-repos.txt`.
 
 - [x] gh CLI scripts + SQLite schema
 - [x] Tracked scientific library repos
-- [x] Python backend (uv + httpx + SQLAlchemy async)
+- [x] Python backend (uv + httpx + SQLAlchemy async + FastAPI)
 - [ ] Analysis agent with visualisations
 - [ ] Issue resolution agent

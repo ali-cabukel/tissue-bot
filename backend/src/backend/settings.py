@@ -6,7 +6,7 @@ import subprocess
 from functools import lru_cache
 from pathlib import Path
 
-from pydantic import Field, SecretStr, field_validator
+from pydantic import Field, SecretStr, computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -39,8 +39,8 @@ class Settings(BaseSettings):
         validation_alias="SECRET_KEY",
     )
     jwt_lifetime_seconds: int = Field(default=3600, validation_alias="JWT_LIFETIME_SECONDS")
-    cors_origins: list[str] = Field(
-        default_factory=lambda: ["http://localhost:3000", "http://localhost:8000"],
+    cors_origins_raw: str = Field(
+        default="http://localhost:3000,http://localhost:8000",
         validation_alias="CORS_ORIGINS",
     )
     api_host: str = Field(default="127.0.0.1", validation_alias="API_HOST")
@@ -53,12 +53,10 @@ class Settings(BaseSettings):
     ollama_model: str = Field(default="llama3.2", validation_alias="OLLAMA_MODEL")
     checkpoint_db_path: Path | None = Field(default=None, validation_alias="CHECKPOINT_DB_PATH")
 
-    @field_validator("cors_origins", mode="before")
-    @classmethod
-    def parse_cors_origins(cls, value: str | list[str]) -> list[str]:
-        if isinstance(value, str):
-            return [origin.strip() for origin in value.split(",") if origin.strip()]
-        return value
+    @computed_field  # type: ignore[prop-decorator]
+    @property
+    def cors_origins(self) -> list[str]:
+        return [origin.strip() for origin in self.cors_origins_raw.split(",") if origin.strip()]
 
     @property
     def schema_path(self) -> Path:

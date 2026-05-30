@@ -26,6 +26,15 @@ ruff format src
 pre-commit run --all-files
 ```
 
+### Tests
+
+```bash
+uv sync --group dev
+uv run pytest
+```
+
+Run from the `backend/` directory. `uv run pytest` ensures the venv and `src/` path are used.
+
 ## CLI (`tissue`)
 
 ```bash

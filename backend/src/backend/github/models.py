@@ -84,9 +84,7 @@ class IssueRecord(BaseModel):
     def from_api(cls, data: dict[str, Any]) -> Self:
         user = data.get("user") or data.get("author") or {}
         labels = data.get("labels") or []
-        label_names = [
-            label["name"] if isinstance(label, dict) else str(label) for label in labels
-        ]
+        label_names = [label["name"] if isinstance(label, dict) else str(label) for label in labels]
         return cls(
             number=int(data["number"]),
             title=data["title"],

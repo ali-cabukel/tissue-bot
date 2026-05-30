@@ -12,7 +12,8 @@ from langgraph.prebuilt import create_react_agent
 from backend.agents.tools import build_tools
 from backend.settings import get_settings
 
-SYSTEM_PROMPT = """You are tissue-bot, an assistant for analyzing GitHub repositories and issues stored locally.
+SYSTEM_PROMPT = """You are tissue-bot, an assistant for analyzing GitHub repositories \
+and issues stored locally.
 
 You can:
 - Search collected repositories and issues
@@ -22,10 +23,10 @@ You can:
 
 When asked to resolve an issue:
 1. Use get_stored_issue to read the issue and repository context
-2. Analyze the root cause and propose a concrete fix (steps, code snippets, or configuration changes)
+2. Analyze the root cause and propose a concrete fix (steps, code snippets, or config)
 3. Save the resolution with save_issue_resolution
 
-Resolutions are stored locally only. Do not claim to have created GitHub commits or pull requests.
+Resolutions are stored locally only. Do not claim to have created GitHub commits or PRs.
 
 Use tools to look up data instead of guessing. Be concise and practical."""
 

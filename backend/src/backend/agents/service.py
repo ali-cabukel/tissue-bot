@@ -3,8 +3,8 @@
 from __future__ import annotations
 
 import uuid
+from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
-from typing import AsyncIterator
 
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.base import BaseCheckpointSaver
@@ -115,9 +115,7 @@ async def agent_lifespan():
     global _checkpointer_cm, _checkpointer, _agent_service
     settings = get_settings()
     settings.resolved_checkpoint_db_path.parent.mkdir(parents=True, exist_ok=True)
-    _checkpointer_cm = AsyncSqliteSaver.from_conn_string(
-        str(settings.resolved_checkpoint_db_path)
-    )
+    _checkpointer_cm = AsyncSqliteSaver.from_conn_string(str(settings.resolved_checkpoint_db_path))
     _checkpointer = await _checkpointer_cm.__aenter__()
     _agent_service = AgentService(_checkpointer)
     try:

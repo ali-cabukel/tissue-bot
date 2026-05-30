@@ -41,9 +41,7 @@ async def collect_tracked(
     for full_name in repos:
         heading(full_name)
         await collect_single_repo(client, db, full_name)
-        await collect_issues(
-            client, db, full_name, state=issue_state, limit=issue_limit
-        )
+        await collect_issues(client, db, full_name, state=issue_state, limit=issue_limit)
 
     done(f"Processed {len(repos)} repos")
     return len(repos)

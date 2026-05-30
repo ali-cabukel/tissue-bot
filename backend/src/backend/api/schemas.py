@@ -150,4 +150,3 @@ class ResolutionOut(BaseModel):
 class PaginatedResolutions(BaseModel):
     items: list[ResolutionOut]
     count: int
-

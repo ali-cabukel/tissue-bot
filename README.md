@@ -54,6 +54,17 @@ Scientific Python libraries — `scripts/config/scientific-repos.txt`.
 - [frontend/README.md](frontend/README.md) — Next.js web UI
 - [scripts/docs/gh-cli-examples.md](scripts/docs/gh-cli-examples.md) — gh CLI cookbook
 
+## Development
+
+```bash
+cd backend
+uv sync --group dev
+pre-commit install   # from repo root
+pre-commit run --all-files
+```
+
+Linting uses [Ruff](https://docs.astral.sh/ruff/) on `backend/src/` via pre-commit hooks.
+
 ## Roadmap
 
 - [x] gh CLI scripts + SQLite schema

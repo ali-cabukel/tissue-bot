@@ -25,10 +25,7 @@ async def collect_issues(
         if repo_id is None:
             raise RuntimeError(f"Failed to store repo: {full_name}")
 
-    info(
-        f"Collecting issues for [bold]{full_name}[/bold] "
-        f"(state={state}, limit={limit})"
-    )
+    info(f"Collecting issues for [bold]{full_name}[/bold] (state={state}, limit={limit})")
     raw_issues = await client.list_issues(full_name, state=state, limit=limit)
 
     for raw in raw_issues:

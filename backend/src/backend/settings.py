@@ -46,6 +46,12 @@ class Settings(BaseSettings):
     api_host: str = Field(default="127.0.0.1", validation_alias="API_HOST")
     api_port: int = Field(default=8000, validation_alias="API_PORT")
     api_reload: bool = Field(default=False, validation_alias="API_RELOAD")
+    ollama_base_url: str = Field(
+        default="http://127.0.0.1:11434",
+        validation_alias="OLLAMA_BASE_URL",
+    )
+    ollama_model: str = Field(default="llama3.2", validation_alias="OLLAMA_MODEL")
+    checkpoint_db_path: Path | None = Field(default=None, validation_alias="CHECKPOINT_DB_PATH")
 
     @field_validator("cors_origins", mode="before")
     @classmethod
@@ -68,6 +74,10 @@ class Settings(BaseSettings):
             self.tracked_repos_file
             or REPO_ROOT / "scripts" / "config" / "scientific-repos.txt"
         )
+
+    @property
+    def resolved_checkpoint_db_path(self) -> Path:
+        return self.checkpoint_db_path or BACKEND_ROOT / "data" / "langgraph-checkpoints.db"
 
     def resolve_github_token(self) -> str:
         if self.github_token is not None:

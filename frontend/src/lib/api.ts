@@ -1,10 +1,15 @@
 import { clearToken, getToken } from "./auth-storage";
 import type {
+  ChatMessage,
+  ChatReply,
+  ChatThread,
   CollectResult,
   Issue,
   PaginatedIssues,
   PaginatedRepos,
+  PaginatedResolutions,
   Repo,
+  Resolution,
   TokenResponse,
   User,
 } from "./types";
@@ -136,4 +141,63 @@ export async function collectIssues(
     `/repos/${owner}/${repo}/issues/collect${query ? `?${query}` : ""}`,
     { method: "POST" },
   );
+}
+
+export async function listChatThreads(): Promise<ChatThread[]> {
+  return request<ChatThread[]>("/chat/threads");
+}
+
+export async function createChatThread(params: {
+  title?: string;
+  owner?: string;
+  repo?: string;
+  number?: number;
+}): Promise<ChatThread> {
+  return request<ChatThread>("/chat/threads", {
+    method: "POST",
+    body: JSON.stringify(params),
+  });
+}
+
+export async function listChatMessages(threadId: string): Promise<ChatMessage[]> {
+  return request<ChatMessage[]>(`/chat/threads/${threadId}/messages`);
+}
+
+export async function sendChatMessage(
+  threadId: string,
+  content: string,
+): Promise<ChatReply> {
+  return request<ChatReply>(`/chat/threads/${threadId}/messages`, {
+    method: "POST",
+    body: JSON.stringify({ content }),
+  });
+}
+
+export async function listResolutions(params: {
+  q?: string;
+  owner?: string;
+  repo?: string;
+  limit?: number;
+} = {}): Promise<PaginatedResolutions> {
+  const search = new URLSearchParams();
+  if (params.q) search.set("q", params.q);
+  if (params.owner) search.set("owner", params.owner);
+  if (params.repo) search.set("repo", params.repo);
+  if (params.limit) search.set("limit", String(params.limit));
+  const query = search.toString();
+  return request<PaginatedResolutions>(`/resolutions${query ? `?${query}` : ""}`);
+}
+
+export async function getResolution(id: number): Promise<Resolution> {
+  return request<Resolution>(`/resolutions/${id}`);
+}
+
+export async function resolveIssue(
+  owner: string,
+  repo: string,
+  number: number,
+): Promise<ChatReply> {
+  return request<ChatReply>(`/repos/${owner}/${repo}/issues/${number}/resolve`, {
+    method: "POST",
+  });
 }

@@ -58,6 +58,6 @@ async def fetch_issue(
         select(Issue)
         .join(Repo)
         .where(Repo.full_name == full_name, Issue.number == number)
-        .options(selectinload(Issue.labels))
+        .options(selectinload(Issue.labels), selectinload(Issue.repo))
     )
     return result.scalar_one_or_none()

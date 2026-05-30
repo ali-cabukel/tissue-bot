@@ -7,7 +7,8 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from backend.api.routers import issues, repos
+from backend.agents.service import agent_lifespan
+from backend.api.routers import chat, issues, repos, resolutions
 from backend.auth.deps import auth_backend, fastapi_users
 from backend.auth.models import User  # noqa: F401 — register user table
 from backend.auth.schemas import UserCreate, UserRead, UserUpdate
@@ -21,7 +22,9 @@ async def lifespan(app: FastAPI):
     engine = get_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
-    yield
+    async with agent_lifespan() as agent_service:
+        app.state.agent_service = agent_service
+        yield
     await dispose_engine()
 
 
@@ -59,6 +62,8 @@ def create_app() -> FastAPI:
     )
     app.include_router(repos.router)
     app.include_router(issues.router)
+    app.include_router(chat.router)
+    app.include_router(resolutions.router)
 
     @app.get("/health", tags=["health"])
     async def health() -> dict[str, str]:

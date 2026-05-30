@@ -117,6 +117,8 @@ export default function RepoIssuesPage({ params }: PageProps) {
           {!loading && !error && (
             <IssuesTable
               issues={filteredIssues}
+              owner={owner}
+              repo={repo}
               emptyMessage={
                 issues.length === 0
                   ? stateFilter === "open"

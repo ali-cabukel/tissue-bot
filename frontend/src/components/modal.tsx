@@ -43,7 +43,7 @@ export function Modal({ open, onClose, title, children }: ModalProps) {
         className="relative z-10 flex max-h-[85vh] w-full max-w-2xl flex-col rounded-lg border border-zinc-200 bg-white shadow-xl dark:border-zinc-800 dark:bg-zinc-950"
       >
         <div className="flex items-start justify-between gap-4 border-b border-zinc-200 px-5 py-4 dark:border-zinc-800">
-          <h2 id="modal-title" className="text-lg font-semibold leading-snug">
+          <h2 id="modal-title" className="min-w-0 flex-1 text-lg font-semibold leading-snug break-words">
             {title}
           </h2>
           <button

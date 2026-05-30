@@ -60,3 +60,38 @@ CREATE INDEX IF NOT EXISTS idx_repos_language ON repos(language);
 CREATE INDEX IF NOT EXISTS idx_repos_stars ON repos(stars);
 CREATE INDEX IF NOT EXISTS idx_issues_repo_id ON issues(repo_id);
 CREATE INDEX IF NOT EXISTS idx_issues_state ON issues(state);
+
+CREATE TABLE IF NOT EXISTS chat_threads (
+    id              TEXT PRIMARY KEY,
+    user_id         TEXT NOT NULL,
+    title           TEXT,
+    issue_id        INTEGER REFERENCES issues(id) ON DELETE SET NULL,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS chat_messages (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    thread_id       TEXT NOT NULL REFERENCES chat_threads(id) ON DELETE CASCADE,
+    role            TEXT NOT NULL,
+    content         TEXT NOT NULL,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE TABLE IF NOT EXISTS issue_resolutions (
+    id              INTEGER PRIMARY KEY AUTOINCREMENT,
+    issue_id        INTEGER NOT NULL REFERENCES issues(id) ON DELETE CASCADE,
+    user_id         TEXT NOT NULL,
+    thread_id       TEXT REFERENCES chat_threads(id) ON DELETE SET NULL,
+    status          TEXT NOT NULL DEFAULT 'completed',
+    summary         TEXT,
+    proposed_fix    TEXT,
+    analysis        TEXT,
+    created_at      TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at      TEXT NOT NULL DEFAULT (datetime('now'))
+);
+
+CREATE INDEX IF NOT EXISTS idx_chat_threads_user_id ON chat_threads(user_id);
+CREATE INDEX IF NOT EXISTS idx_chat_messages_thread_id ON chat_messages(thread_id);
+CREATE INDEX IF NOT EXISTS idx_issue_resolutions_issue_id ON issue_resolutions(issue_id);
+CREATE INDEX IF NOT EXISTS idx_issue_resolutions_user_id ON issue_resolutions(user_id);

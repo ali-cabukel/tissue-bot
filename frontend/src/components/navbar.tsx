@@ -21,6 +21,12 @@ export function Navbar() {
               >
                 Repositories
               </Link>
+              <Link
+                href="/chat"
+                className="text-zinc-600 hover:text-zinc-900 dark:text-zinc-400 dark:hover:text-zinc-100"
+              >
+                Agent chat
+              </Link>
               <span className="hidden text-zinc-500 sm:inline">{user.email}</span>
               <button
                 type="button"

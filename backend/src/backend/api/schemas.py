@@ -94,3 +94,60 @@ class PaginatedIssues(BaseModel):
     limit: int
     offset: int
     count: int
+
+
+class ChatThreadCreate(BaseModel):
+    title: str | None = None
+    owner: str | None = None
+    repo: str | None = None
+    number: int | None = None
+
+
+class ChatThreadOut(BaseModel):
+    id: str
+    title: str | None
+    issue_full_name: str | None = None
+    issue_number: int | None = None
+    created_at: str
+    updated_at: str
+
+
+class ChatMessageOut(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    thread_id: str
+    role: str
+    content: str
+    created_at: str
+
+
+class ChatMessageCreate(BaseModel):
+    content: str = Field(min_length=1)
+
+
+class ChatReplyOut(BaseModel):
+    thread_id: str
+    message: ChatMessageOut
+    reply: ChatMessageOut
+
+
+class ResolutionOut(BaseModel):
+    id: int
+    issue_id: int
+    full_name: str
+    issue_number: int
+    issue_title: str
+    status: str
+    summary: str | None
+    proposed_fix: str | None
+    analysis: str | None
+    thread_id: str | None
+    created_at: str
+    updated_at: str
+
+
+class PaginatedResolutions(BaseModel):
+    items: list[ResolutionOut]
+    count: int
+

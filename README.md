@@ -60,5 +60,7 @@ Scientific Python libraries — `scripts/config/scientific-repos.txt`.
 - [x] Tracked scientific library repos
 - [x] Python backend (uv + httpx + SQLAlchemy async + FastAPI)
 - [x] Next.js frontend (auth, repos & issues tables, collect/scrape)
+- [x] LangGraph issue-resolution agent (Ollama + SQLite checkpointer)
+- [ ] GitHub commit/PR cycle for saved resolutions
 - [ ] Analysis agent with visualisations
 - [ ] Issue resolution agent

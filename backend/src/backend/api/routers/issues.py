@@ -6,11 +6,11 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import github_client, repo_full_name
-from backend.api.schemas import CollectResult, IssueOut, PaginatedIssues
+from backend.api.schemas import ChatMessageOut, ChatReplyOut, CollectResult, IssueOut, PaginatedIssues
 from backend.auth.deps import current_active_user
 from backend.auth.models import User
 from backend.collectors.issues import collect_issues
-from backend.db.engine import get_async_session
+from backend.db.engine import get_async_session, get_session_maker
 from backend.db.repository import fetch_issue, fetch_issues
 from backend.db.store import Database
 from backend.github.client import IssueState
@@ -86,3 +86,46 @@ async def get_issue(
             detail=f"Issue #{number} not found for {full_name}",
         )
     return IssueOut.model_validate(row)
+
+
+@router.post("/{number}/resolve", response_model=ChatReplyOut, status_code=status.HTTP_201_CREATED)
+async def resolve_issue(
+    owner: str,
+    repo: str,
+    number: int,
+    user: User = Depends(current_active_user),
+) -> ChatReplyOut:
+    from backend.agents.service import get_agent_service
+
+    full_name = repo_full_name(owner, repo)
+    async with get_session_maker()() as session:
+        issue = await fetch_issue(session, full_name, number)
+        if issue is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Issue not found locally: {full_name}#{number}. Collect it first.",
+            )
+        issue_title = issue.title
+
+    agent = get_agent_service()
+    thread_id, _ = await agent.create_thread(
+        user.id,
+        title=f"Resolve {full_name}#{number}",
+        owner=owner,
+        repo=repo,
+        number=number,
+    )
+    prompt = (
+        f"Analyze and propose a local resolution for {full_name}#{number}: {issue_title}. "
+        "Read the issue details, explain your analysis, and save the resolution locally."
+    )
+    try:
+        user_message, assistant_message = await agent.send_message(user.id, thread_id, prompt)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Agent failed: {exc}") from exc
+
+    return ChatReplyOut(
+        thread_id=thread_id,
+        message=ChatMessageOut.model_validate(user_message),
+        reply=ChatMessageOut.model_validate(assistant_message),
+    )

@@ -93,3 +93,72 @@ class SyncLog(Base):
     synced_at: Mapped[str] = mapped_column(
         String, nullable=False, server_default=func.datetime("now")
     )
+
+
+class ChatThread(Base):
+    __tablename__ = "chat_threads"
+    __table_args__ = (Index("idx_chat_threads_user_id", "user_id"),)
+
+    id: Mapped[str] = mapped_column(String, primary_key=True)
+    user_id: Mapped[str] = mapped_column(String, nullable=False)
+    title: Mapped[str | None] = mapped_column(String)
+    issue_id: Mapped[int | None] = mapped_column(
+        ForeignKey("issues.id", ondelete="SET NULL")
+    )
+    created_at: Mapped[str] = mapped_column(
+        String, nullable=False, server_default=func.datetime("now")
+    )
+    updated_at: Mapped[str] = mapped_column(
+        String, nullable=False, server_default=func.datetime("now")
+    )
+
+    issue: Mapped[Issue | None] = relationship()
+    messages: Mapped[list[ChatMessage]] = relationship(
+        back_populates="thread", cascade="all, delete-orphan"
+    )
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+    __table_args__ = (Index("idx_chat_messages_thread_id", "thread_id"),)
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    thread_id: Mapped[str] = mapped_column(
+        ForeignKey("chat_threads.id", ondelete="CASCADE"), nullable=False
+    )
+    role: Mapped[str] = mapped_column(String, nullable=False)
+    content: Mapped[str] = mapped_column(Text, nullable=False)
+    created_at: Mapped[str] = mapped_column(
+        String, nullable=False, server_default=func.datetime("now")
+    )
+
+    thread: Mapped[ChatThread] = relationship(back_populates="messages")
+
+
+class IssueResolution(Base):
+    __tablename__ = "issue_resolutions"
+    __table_args__ = (
+        Index("idx_issue_resolutions_issue_id", "issue_id"),
+        Index("idx_issue_resolutions_user_id", "user_id"),
+    )
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    issue_id: Mapped[int] = mapped_column(
+        ForeignKey("issues.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id: Mapped[str] = mapped_column(String, nullable=False)
+    thread_id: Mapped[str | None] = mapped_column(
+        ForeignKey("chat_threads.id", ondelete="SET NULL")
+    )
+    status: Mapped[str] = mapped_column(String, nullable=False, default="completed")
+    summary: Mapped[str | None] = mapped_column(Text)
+    proposed_fix: Mapped[str | None] = mapped_column(Text)
+    analysis: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[str] = mapped_column(
+        String, nullable=False, server_default=func.datetime("now")
+    )
+    updated_at: Mapped[str] = mapped_column(
+        String, nullable=False, server_default=func.datetime("now")
+    )
+
+    issue: Mapped[Issue] = relationship()

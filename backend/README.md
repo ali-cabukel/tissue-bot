@@ -60,6 +60,28 @@ All data routes require `Authorization: Bearer <token>`.
 
 Query params for collect: `state` (open/closed), `limit`. For list: `state`, `limit`, `offset`.
 
+### Agent chat & resolutions (LangGraph + Ollama)
+
+Requires [Ollama](https://ollama.com/) running locally with a model pulled, e.g.:
+
+```bash
+ollama pull llama3.2
+ollama serve
+```
+
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/chat/threads` | Create chat thread (optional issue context) |
+| GET | `/chat/threads` | List chat threads |
+| GET | `/chat/threads/{id}/messages` | List messages |
+| POST | `/chat/threads/{id}/messages` | Send message to agent |
+| GET | `/resolutions` | List/search saved resolutions |
+| GET | `/resolutions/{id}` | Get resolution |
+| POST | `/repos/{owner}/{repo}/issues/{number}/resolve` | Run agent to propose local fix |
+
+Agent tools search stored repos/issues and save resolutions locally (no GitHub PR yet).
+Conversation state is checkpointed in SQLite (`backend/data/langgraph-checkpoints.db`).
+
 ### Example
 
 ```bash
@@ -85,6 +107,9 @@ curl http://127.0.0.1:8000/repos/numpy/numpy \
 | `SECRET_KEY` | (required for production) |
 | `CORS_ORIGINS` | `http://localhost:3000,http://localhost:8000` |
 | `API_HOST` / `API_PORT` | `127.0.0.1` / `8000` |
+| `OLLAMA_BASE_URL` | `http://127.0.0.1:11434` |
+| `OLLAMA_MODEL` | `llama3.2` |
+| `CHECKPOINT_DB_PATH` | `backend/data/langgraph-checkpoints.db` |
 | Database | `backend/data/tissue-bot.db` |
 
 Shell script equivalents: `../scripts/`.

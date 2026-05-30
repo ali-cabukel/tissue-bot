@@ -69,6 +69,49 @@ export interface PaginatedIssues {
   count: number;
 }
 
+export interface ChatThread {
+  id: string;
+  title: string | null;
+  issue_full_name: string | null;
+  issue_number: number | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface ChatMessage {
+  id: number;
+  thread_id: string;
+  role: string;
+  content: string;
+  created_at: string;
+}
+
+export interface ChatReply {
+  thread_id: string;
+  message: ChatMessage;
+  reply: ChatMessage;
+}
+
+export interface Resolution {
+  id: number;
+  issue_id: number;
+  full_name: string;
+  issue_number: number;
+  issue_title: string;
+  status: string;
+  summary: string | null;
+  proposed_fix: string | null;
+  analysis: string | null;
+  thread_id: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface PaginatedResolutions {
+  items: Resolution[];
+  count: number;
+}
+
 export class ApiError extends Error {
   constructor(
     message: string,

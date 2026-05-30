@@ -28,7 +28,19 @@ npm run dev   # http://localhost:3000
 
 - **Register / log in** — JWT stored in `localStorage` (`tissue_token`)
 - **Repositories** — collect from GitHub, list stored repos in a table
-- **Issues** — per-repo issue collection and filtered table view
+- **Issues** — per-repo issue collection, search, body modal, resolve/chat actions
+- **Agent chat** — LangGraph assistant at `/chat` to search data and save local resolutions
+
+## Agent chat
+
+Requires Ollama running with the model configured in backend `.env` (default `llama3.2`):
+
+```bash
+ollama pull llama3.2
+ollama serve
+```
+
+Use **Agent chat** in the navbar or click **Resolve** / **Chat** on an issue row.
 
 ## Environment
 

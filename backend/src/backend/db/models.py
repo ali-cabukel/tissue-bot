@@ -102,9 +102,7 @@ class ChatThread(Base):
     id: Mapped[str] = mapped_column(String, primary_key=True)
     user_id: Mapped[str] = mapped_column(String, nullable=False)
     title: Mapped[str | None] = mapped_column(String)
-    issue_id: Mapped[int | None] = mapped_column(
-        ForeignKey("issues.id", ondelete="SET NULL")
-    )
+    issue_id: Mapped[int | None] = mapped_column(ForeignKey("issues.id", ondelete="SET NULL"))
     created_at: Mapped[str] = mapped_column(
         String, nullable=False, server_default=func.datetime("now")
     )

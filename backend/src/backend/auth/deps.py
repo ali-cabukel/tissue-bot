@@ -13,7 +13,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.auth.manager import UserManager
 from backend.auth.models import User
-from backend.auth.schemas import UserCreate, UserRead, UserUpdate
 from backend.db.engine import get_async_session
 from backend.settings import get_settings
 
@@ -37,13 +36,13 @@ auth_backend = AuthenticationBackend(
 
 async def get_user_db(
     session: AsyncSession = Depends(get_async_session),
-) -> AsyncGenerator[SQLAlchemyUserDatabase, None]:
+) -> AsyncGenerator[SQLAlchemyUserDatabase]:
     yield SQLAlchemyUserDatabase(session, User)
 
 
 async def get_user_manager(
     user_db: SQLAlchemyUserDatabase = Depends(get_user_db),
-) -> AsyncGenerator[UserManager, None]:
+) -> AsyncGenerator[UserManager]:
     settings = get_settings()
     manager = UserManager(user_db)
     secret = settings.secret_key.get_secret_value()

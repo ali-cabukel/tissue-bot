@@ -10,7 +10,7 @@ from backend.settings import get_settings
 
 
 @asynccontextmanager
-async def github_client() -> AsyncGenerator[GitHubClient, None]:
+async def github_client() -> AsyncGenerator[GitHubClient]:
     settings = get_settings()
     token = settings.resolve_github_token()
     async with GitHubClient(token, base_url=settings.github_api_base_url) as client:

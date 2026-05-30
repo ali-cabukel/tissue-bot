@@ -70,10 +70,7 @@ class Settings(BaseSettings):
 
     @property
     def resolved_tracked_repos_file(self) -> Path:
-        return (
-            self.tracked_repos_file
-            or REPO_ROOT / "scripts" / "config" / "scientific-repos.txt"
-        )
+        return self.tracked_repos_file or REPO_ROOT / "scripts" / "config" / "scientific-repos.txt"
 
     @property
     def resolved_checkpoint_db_path(self) -> Path:

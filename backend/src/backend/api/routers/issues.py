@@ -6,7 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import github_client, repo_full_name
-from backend.api.schemas import ChatMessageOut, ChatReplyOut, CollectResult, IssueOut, PaginatedIssues
+from backend.api.schemas import (
+    ChatMessageOut,
+    ChatReplyOut,
+    CollectResult,
+    IssueOut,
+    PaginatedIssues,
+)
 from backend.auth.deps import current_active_user
 from backend.auth.models import User
 from backend.collectors.issues import collect_issues
@@ -30,9 +36,7 @@ async def collect_repo_issues(
     db = Database()
     try:
         async with github_client() as client:
-            count = await collect_issues(
-                client, db, full_name, state=state, limit=limit
-            )
+            count = await collect_issues(client, db, full_name, state=state, limit=limit)
     finally:
         await db.close()
     return CollectResult(

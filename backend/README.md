@@ -15,6 +15,17 @@ Auth: `GITHUB_TOKEN` in `.env`, or `gh auth login` (falls back to `gh auth token
 
 Configuration: `src/backend/settings.py` (pydantic-settings).
 
+### Linting
+
+```bash
+uv sync --group dev
+ruff check src
+ruff format src
+
+# Or from repo root after `pre-commit install`:
+pre-commit run --all-files
+```
+
 ## CLI (`tissue`)
 
 ```bash

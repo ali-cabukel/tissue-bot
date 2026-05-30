@@ -2,12 +2,11 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import delete, select
 from sqlalchemy.dialects.sqlite import insert
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker
 
 from backend.console import info, warn
 from backend.db.engine import get_engine, get_session_maker
@@ -17,7 +16,7 @@ from backend.settings import get_settings
 
 
 def _now() -> str:
-    return datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
+    return datetime.now(UTC).strftime("%Y-%m-%d %H:%M:%S")
 
 
 class Database:
@@ -45,9 +44,7 @@ class Database:
 
     def ensure_exists(self) -> None:
         if not self.path.exists():
-            raise FileNotFoundError(
-                f"Database not found at {self.path}. Run: tissue init-db"
-            )
+            raise FileNotFoundError(f"Database not found at {self.path}. Run: tissue init-db")
 
     async def upsert_repo(self, repo: RepoRecord) -> None:
         now = _now()
@@ -71,24 +68,28 @@ class Database:
             "topics": repo.topics_json,
             "collected_at": now,
         }
-        stmt = insert(Repo).values(**values).on_conflict_do_update(
-            index_elements=[Repo.full_name],
-            set_={
-                Repo.description: values["description"],
-                Repo.url: values["url"],
-                Repo.stars: values["stars"],
-                Repo.forks: values["forks"],
-                Repo.language: values["language"],
-                Repo.is_private: values["is_private"],
-                Repo.is_fork: values["is_fork"],
-                Repo.is_archived: values["is_archived"],
-                Repo.license_key: values["license_key"],
-                Repo.default_branch: values["default_branch"],
-                Repo.updated_at: values["updated_at"],
-                Repo.pushed_at: values["pushed_at"],
-                Repo.topics: values["topics"],
-                Repo.collected_at: now,
-            },
+        stmt = (
+            insert(Repo)
+            .values(**values)
+            .on_conflict_do_update(
+                index_elements=[Repo.full_name],
+                set_={
+                    Repo.description: values["description"],
+                    Repo.url: values["url"],
+                    Repo.stars: values["stars"],
+                    Repo.forks: values["forks"],
+                    Repo.language: values["language"],
+                    Repo.is_private: values["is_private"],
+                    Repo.is_fork: values["is_fork"],
+                    Repo.is_archived: values["is_archived"],
+                    Repo.license_key: values["license_key"],
+                    Repo.default_branch: values["default_branch"],
+                    Repo.updated_at: values["updated_at"],
+                    Repo.pushed_at: values["pushed_at"],
+                    Repo.topics: values["topics"],
+                    Repo.collected_at: now,
+                },
+            )
         )
         async with self._sessions() as session:
             await session.execute(stmt)
@@ -96,9 +97,7 @@ class Database:
 
     async def get_repo_id(self, full_name: str) -> int | None:
         async with self._sessions() as session:
-            result = await session.execute(
-                select(Repo.id).where(Repo.full_name == full_name)
-            )
+            result = await session.execute(select(Repo.id).where(Repo.full_name == full_name))
             row = result.scalar_one_or_none()
         return row
 
@@ -116,17 +115,21 @@ class Database:
             "updated_at": issue.updated_at,
             "collected_at": now,
         }
-        stmt = insert(Issue).values(**values).on_conflict_do_update(
-            index_elements=[Issue.repo_id, Issue.number],
-            set_={
-                Issue.title: values["title"],
-                Issue.state: values["state"],
-                Issue.body: values["body"],
-                Issue.author: values["author"],
-                Issue.url: values["url"],
-                Issue.updated_at: values["updated_at"],
-                Issue.collected_at: now,
-            },
+        stmt = (
+            insert(Issue)
+            .values(**values)
+            .on_conflict_do_update(
+                index_elements=[Issue.repo_id, Issue.number],
+                set_={
+                    Issue.title: values["title"],
+                    Issue.state: values["state"],
+                    Issue.body: values["body"],
+                    Issue.author: values["author"],
+                    Issue.url: values["url"],
+                    Issue.updated_at: values["updated_at"],
+                    Issue.collected_at: now,
+                },
+            )
         )
 
         async with self._sessions() as session:
@@ -141,18 +144,14 @@ class Database:
             )
             issue_id = result.scalar_one()
 
-            await session.execute(
-                delete(IssueLabel).where(IssueLabel.issue_id == issue_id)
-            )
+            await session.execute(delete(IssueLabel).where(IssueLabel.issue_id == issue_id))
             for label in issue.labels:
                 session.add(IssueLabel(issue_id=issue_id, label_name=label))
 
             await session.commit()
         return issue_id
 
-    async def log_sync(
-        self, entity_type: str, entity_ref: str, status: str, message: str
-    ) -> None:
+    async def log_sync(self, entity_type: str, entity_ref: str, status: str, message: str) -> None:
         async with self._sessions() as session:
             session.add(
                 SyncLog(

@@ -65,6 +65,10 @@ pre-commit run --all-files
 
 Linting uses [Ruff](https://docs.astral.sh/ruff/) on `backend/src/` via pre-commit hooks.
 
+```bash
+cd backend && uv sync --group dev && pytest
+```
+
 ## Roadmap
 
 - [x] gh CLI scripts + SQLite schema

@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import github_client, repo_full_name
+from backend.api.errors import raise_github_http_error
 from backend.api.schemas import CollectResult, PaginatedRepos, RepoOut
 from backend.auth.deps import current_active_user
 from backend.auth.models import User
@@ -28,6 +30,8 @@ async def collect_repo(
     try:
         async with github_client() as client:
             count = await collect_single_repo(client, db, full_name)
+    except httpx.HTTPStatusError as exc:
+        raise_github_http_error(exc)
     finally:
         await db.close()
     return CollectResult(

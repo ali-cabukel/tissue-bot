@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import httpx
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from backend.api.deps import github_client, repo_full_name
+from backend.api.errors import raise_github_http_error
 from backend.api.schemas import (
     ChatMessageOut,
     ChatReplyOut,
@@ -37,6 +39,8 @@ async def collect_repo_issues(
     try:
         async with github_client() as client:
             count = await collect_issues(client, db, full_name, state=state, limit=limit)
+    except httpx.HTTPStatusError as exc:
+        raise_github_http_error(exc)
     finally:
         await db.close()
     return CollectResult(

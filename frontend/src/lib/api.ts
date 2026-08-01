@@ -18,6 +18,7 @@ import type {
 import { ApiError } from "./types";
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://127.0.0.1:8000";
+const API_PREFIX = "/api";
 
 async function parseError(response: Response): Promise<string> {
   try {
@@ -56,7 +57,7 @@ async function request<T>(
     headers.set("Content-Type", "application/json");
   }
 
-  const response = await fetch(`${API_BASE}${path}`, {
+  const response = await fetch(`${API_BASE}${API_PREFIX}${path}`, {
     ...options,
     headers,
   });

@@ -34,6 +34,6 @@ async def test_repos_requires_authentication():
         app = create_app()
         transport = ASGITransport(app=app)
         async with AsyncClient(transport=transport, base_url="http://test") as client:
-            response = await client.get("/repos")
+            response = await client.get("/api/repos")
 
     assert response.status_code == 401

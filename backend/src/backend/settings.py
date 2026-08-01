@@ -120,10 +120,12 @@ class Settings(BaseSettings):
 
     @property
     def sync_database_url(self) -> str:
-        """Sync driver URL for LangGraph Postgres checkpointer."""
+        """Libpq/psycopg connection string for LangGraph Postgres checkpointer."""
         url = self.resolved_database_url
         if url.startswith("postgresql+asyncpg://"):
-            return "postgresql+psycopg://" + url.removeprefix("postgresql+asyncpg://")
+            return "postgresql://" + url.removeprefix("postgresql+asyncpg://")
+        if url.startswith("postgresql+psycopg://"):
+            return "postgresql://" + url.removeprefix("postgresql+psycopg://")
         if url.startswith("sqlite+aiosqlite:///"):
             return "sqlite:///" + url.removeprefix("sqlite+aiosqlite:///")
         return url

@@ -109,11 +109,27 @@ Split mode keeps Next.js on its own port for future scaling. Bundled mode serves
 
 Push to `main` triggers `.github/workflows/deploy.yml` (bundled root `Dockerfile`).
 
+| Workflow | Trigger | Purpose |
+| -------- | ------- | ------- |
+| `deploy.yml` | Push to `main` | Build image, deploy Cloud Run service + `tissue-collect-tracked` job |
+| `collect-tracked.yml` | Daily 04:00 UTC, manual | Execute the scientific library collection job |
+
+After the first deploy, run **Collect tracked repos** manually in GitHub Actions (or wait for the nightly schedule) to populate repositories.
+
 Before first deploy:
 
 1. Add `kurtc3b3/tissue-bot` to GitHub WIF provider
 2. Create GCP secrets: `SECRET`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `GITHUB_TOKEN`
 3. Deploy sets `DATABASE_SCHEMA=tissue-bot`, `LLM_PROVIDER=anthropic`, `STATIC_DIR=/app/static`
+
+The collection job runs:
+
+```bash
+tissue init-db
+tissue collect-tracked --issue-limit 50
+```
+
+Tracked repos are read from `scripts/config/scientific-repos.txt` (bundled in the Docker image at `/app/scripts/config/scientific-repos.txt`).
 
 ## Roadmap
 

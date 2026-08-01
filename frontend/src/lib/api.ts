@@ -4,6 +4,7 @@ import type {
   ChatReply,
   ChatThread,
   CollectResult,
+  CollectTrackedResult,
   Issue,
   PaginatedIssues,
   PaginatedRepos,
@@ -11,6 +12,7 @@ import type {
   Repo,
   Resolution,
   TokenResponse,
+  TrackedRepos,
   User,
 } from "./types";
 import { ApiError } from "./types";
@@ -107,6 +109,24 @@ export async function getRepo(owner: string, repo: string): Promise<Repo> {
 
 export async function collectRepo(owner: string, repo: string): Promise<CollectResult> {
   return request<CollectResult>(`/repos/${owner}/${repo}/collect`, { method: "POST" });
+}
+
+export async function listTrackedRepos(): Promise<TrackedRepos> {
+  return request<TrackedRepos>("/repos/tracked");
+}
+
+export async function collectTrackedRepos(params: {
+  issueLimit?: number;
+  issueState?: string;
+} = {}): Promise<CollectTrackedResult> {
+  const search = new URLSearchParams();
+  if (params.issueLimit) search.set("issue_limit", String(params.issueLimit));
+  if (params.issueState) search.set("issue_state", params.issueState);
+  const query = search.toString();
+  return request<CollectTrackedResult>(
+    `/repos/collect-tracked${query ? `?${query}` : ""}`,
+    { method: "POST" },
+  );
 }
 
 export async function listIssues(

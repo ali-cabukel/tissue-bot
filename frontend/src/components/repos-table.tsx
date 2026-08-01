@@ -11,7 +11,7 @@ function formatDate(value: string | null): string {
 
 export function ReposTable({
   repos,
-  emptyMessage = "No repositories yet. Collect one using the form above.",
+  emptyMessage = "No repositories yet. Collect the scientific libraries above or add one manually.",
 }: {
   repos: Repo[];
   emptyMessage?: string;

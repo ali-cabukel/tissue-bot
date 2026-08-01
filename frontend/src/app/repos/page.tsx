@@ -6,6 +6,7 @@ import { CollectRepoForm } from "@/components/collect-repo-form";
 import { ProtectedRoute } from "@/components/protected-route";
 import { ReposTable } from "@/components/repos-table";
 import { SearchInput } from "@/components/search-input";
+import { TrackedReposPanel } from "@/components/tracked-repos-panel";
 import * as api from "@/lib/api";
 import { filterRepos } from "@/lib/search";
 import type { Repo } from "@/lib/types";
@@ -47,6 +48,10 @@ export default function ReposPage() {
         </div>
 
         <CollectRepoForm onCollected={loadRepos} />
+
+        <div className="mt-6">
+          <TrackedReposPanel onCollected={loadRepos} />
+        </div>
 
         <div className="mt-8">
           <div className="mb-4 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

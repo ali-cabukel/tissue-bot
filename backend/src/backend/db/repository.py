@@ -26,6 +26,16 @@ async def fetch_repo(session: AsyncSession, full_name: str) -> Repo | None:
     return result.scalar_one_or_none()
 
 
+async def fetch_collected_full_names(
+    session: AsyncSession,
+    full_names: list[str],
+) -> set[str]:
+    if not full_names:
+        return set()
+    result = await session.execute(select(Repo.full_name).where(Repo.full_name.in_(full_names)))
+    return set(result.scalars().all())
+
+
 async def fetch_issues(
     session: AsyncSession,
     full_name: str,

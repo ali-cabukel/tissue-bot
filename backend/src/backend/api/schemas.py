@@ -81,6 +81,22 @@ class CollectResult(BaseModel):
     message: str
 
 
+class TrackedRepoOut(BaseModel):
+    full_name: str
+    collected: bool
+
+
+class TrackedReposOut(BaseModel):
+    source_file: str
+    items: list[TrackedRepoOut]
+    count: int
+
+
+class CollectTrackedResult(BaseModel):
+    collected: int
+    message: str
+
+
 class PaginatedRepos(BaseModel):
     items: list[RepoOut]
     limit: int

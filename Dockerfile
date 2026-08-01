@@ -25,10 +25,13 @@ RUN apt-get update \
 
 COPY --from=ghcr.io/astral-sh/uv:latest /uv /usr/local/bin/uv
 
+# Install dependencies first (cached layer), then the local package with full sources.
 COPY backend/pyproject.toml backend/uv.lock ./
+RUN uv sync --frozen --no-dev --no-install-project
+
+COPY backend/README.md ./
 COPY backend/src ./src
 COPY scripts /app/scripts
-
 RUN uv sync --frozen --no-dev
 
 COPY --from=web /app/frontend/out /app/static

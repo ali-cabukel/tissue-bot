@@ -2,12 +2,17 @@
 
 from __future__ import annotations
 
-from sqlalchemy import ForeignKey, Index, Integer, String, Text, UniqueConstraint, func
+from sqlalchemy import ForeignKey, Index, Integer, String, Text, UniqueConstraint, text
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+
+from backend.db.schema import metadata
 
 
 class Base(DeclarativeBase):
-    pass
+    metadata = metadata
+
+
+_TIMESTAMP_DEFAULT = text("CURRENT_TIMESTAMP")
 
 
 class Repo(Base):
@@ -37,7 +42,7 @@ class Repo(Base):
     pushed_at: Mapped[str | None] = mapped_column(String)
     topics: Mapped[str | None] = mapped_column(Text)
     collected_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
 
     issues: Mapped[list[Issue]] = relationship(back_populates="repo", cascade="all, delete-orphan")
@@ -62,7 +67,7 @@ class Issue(Base):
     created_at: Mapped[str | None] = mapped_column(String)
     updated_at: Mapped[str | None] = mapped_column(String)
     collected_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
 
     repo: Mapped[Repo] = relationship(back_populates="issues")
@@ -91,7 +96,7 @@ class SyncLog(Base):
     status: Mapped[str] = mapped_column(String, nullable=False)
     message: Mapped[str | None] = mapped_column(Text)
     synced_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
 
 
@@ -104,10 +109,10 @@ class ChatThread(Base):
     title: Mapped[str | None] = mapped_column(String)
     issue_id: Mapped[int | None] = mapped_column(ForeignKey("issues.id", ondelete="SET NULL"))
     created_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
     updated_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
 
     issue: Mapped[Issue | None] = relationship()
@@ -127,7 +132,7 @@ class ChatMessage(Base):
     role: Mapped[str] = mapped_column(String, nullable=False)
     content: Mapped[str] = mapped_column(Text, nullable=False)
     created_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
 
     thread: Mapped[ChatThread] = relationship(back_populates="messages")
@@ -153,10 +158,10 @@ class IssueResolution(Base):
     proposed_fix: Mapped[str | None] = mapped_column(Text)
     analysis: Mapped[str | None] = mapped_column(Text)
     created_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
     updated_at: Mapped[str] = mapped_column(
-        String, nullable=False, server_default=func.datetime("now")
+        String, nullable=False, server_default=_TIMESTAMP_DEFAULT
     )
 
     issue: Mapped[Issue] = relationship()

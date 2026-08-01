@@ -5,12 +5,11 @@ from __future__ import annotations
 import uuid
 
 from langchain_core.messages import AIMessage, HumanMessage
-from langchain_ollama import ChatOllama
 from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.prebuilt import create_react_agent
 
+from backend.agents.llm import create_chat_model
 from backend.agents.tools import build_tools
-from backend.settings import get_settings
 
 SYSTEM_PROMPT = """You are tissue-bot, an assistant for analyzing GitHub repositories \
 and issues stored locally.
@@ -36,12 +35,7 @@ def create_issue_agent(
     user_id: uuid.UUID,
     thread_id: str | None = None,
 ):
-    settings = get_settings()
-    model = ChatOllama(
-        model=settings.ollama_model,
-        base_url=settings.ollama_base_url,
-        temperature=0.2,
-    )
+    model = create_chat_model()
     tools = build_tools(user_id, thread_id=thread_id)
     return create_react_agent(
         model,

@@ -9,19 +9,18 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from backend.agents.service import agent_lifespan
 from backend.api.routers import chat, issues, repos, resolutions
+from backend.api.static_web import mount_static_web
 from backend.auth.deps import auth_backend, fastapi_users
 from backend.auth.models import User  # noqa: F401 — register user table
 from backend.auth.schemas import UserCreate, UserRead, UserUpdate
 from backend.db.engine import dispose_engine, get_engine
-from backend.db.models import Base
+from backend.db.init_db import init_schema
 from backend.settings import get_settings
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    engine = get_engine()
-    async with engine.begin() as conn:
-        await conn.run_sync(Base.metadata.create_all)
+    await init_schema(get_engine())
     async with agent_lifespan() as agent_service:
         app.state.agent_service = agent_service
         yield
@@ -66,7 +65,20 @@ def create_app() -> FastAPI:
     app.include_router(resolutions.router)
 
     @app.get("/health", tags=["health"])
-    async def health() -> dict[str, str]:
-        return {"status": "ok"}
+    async def health() -> dict[str, str | bool]:
+        settings = get_settings()
+        return {
+            "status": "ok",
+            "llm_provider": settings.llm_provider,
+            "llm_active": settings.resolved_llm_provider(),
+            "anthropic_configured": settings.has_anthropic_api_key(),
+            "anthropic_model": settings.anthropic_model,
+            "ollama_base_url": settings.ollama_base_url,
+            "ollama_model": settings.ollama_model,
+            "database": "postgres" if not settings.is_sqlite else "sqlite",
+            "database_schema": settings.database_schema,
+        }
+
+    mount_static_web(app, settings.static_dir_path)
 
     return app

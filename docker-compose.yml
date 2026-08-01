@@ -1,3 +1,15 @@
+# Split stack: backend API (:8000) + Next.js frontend (:3000).
+#
+#   docker compose up --build
+#
+# With local Supabase Postgres instead of SQLite:
+#
+#   docker compose -f docker-compose.yml -f docker-compose.supabase.yml up --build
+#
+# For single-container bundled mode (Cloud Run-style):
+#
+#   docker compose -f docker-compose.bundled.yml up --build
+
 services:
   backend:
     build:
@@ -9,12 +21,21 @@ services:
       SECRET_KEY: ${SECRET_KEY:-change-me-in-production}
       CORS_ORIGINS: "http://localhost:3000,http://127.0.0.1:3000,http://localhost:8000,http://127.0.0.1:8000"
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      LLM_PROVIDER: ${LLM_PROVIDER:-auto}
+      ANTHROPIC_API_KEY: ${ANTHROPIC_API_KEY:-}
+      ANTHROPIC_MODEL: ${ANTHROPIC_MODEL:-claude-sonnet-4-20250514}
       OLLAMA_BASE_URL: ${OLLAMA_BASE_URL:-http://host.docker.internal:11434}
       OLLAMA_MODEL: ${OLLAMA_MODEL:-llama3.2}
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
       - backend-data:/app/backend/data
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 30s
     restart: unless-stopped
 
   frontend:
@@ -26,7 +47,8 @@ services:
     ports:
       - "3000:3000"
     depends_on:
-      - backend
+      backend:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:

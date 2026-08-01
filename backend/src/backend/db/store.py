@@ -6,13 +6,14 @@ from datetime import UTC, datetime
 from pathlib import Path
 
 from sqlalchemy import delete, select
-from sqlalchemy.dialects.sqlite import insert
 
 from backend.console import info, warn
 from backend.db.engine import get_engine, get_session_maker
-from backend.db.models import Base, Issue, IssueLabel, Repo, SyncLog
+from backend.db.init_db import init_schema
+from backend.db.models import Issue, IssueLabel, Repo, SyncLog
+from backend.db.upsert import dialect_insert
 from backend.github.models import IssueRecord, RepoRecord
-from backend.settings import get_settings
+from backend.settings import Settings, get_settings
 
 
 def _now() -> str:
@@ -21,7 +22,9 @@ def _now() -> str:
 
 class Database:
     def __init__(self, path: Path | None = None) -> None:
-        self.path = path or get_settings().resolved_db_path
+        settings = get_settings()
+        self.settings: Settings = settings
+        self.path = path or settings.resolved_db_path
         self._engine = get_engine()
         self._sessions = get_session_maker()
 
@@ -29,21 +32,25 @@ class Database:
         pass
 
     async def init(self) -> Path:
-        self.path.parent.mkdir(parents=True, exist_ok=True)
-        if self.path.exists():
-            warn(f"Database already exists: {self.path}")
-            return self.path
+        if self.settings.is_sqlite:
+            self.path.parent.mkdir(parents=True, exist_ok=True)
+            existed = self.path.exists()
+        else:
+            existed = False
 
-        async with self._engine.begin() as conn:
-            # Import User so auth tables are included in metadata.
-            from backend.auth.models import User  # noqa: F401
+        await init_schema(self._engine)
 
-            await conn.run_sync(Base.metadata.create_all)
-        info(f"Created database: [bold]{self.path}[/bold]")
+        if self.settings.is_sqlite:
+            if existed:
+                warn(f"Database already exists: {self.path}")
+            else:
+                info(f"Created database: [bold]{self.path}[/bold]")
+        else:
+            info("Postgres schema ready")
         return self.path
 
     def ensure_exists(self) -> None:
-        if not self.path.exists():
+        if self.settings.is_sqlite and not self.path.exists():
             raise FileNotFoundError(f"Database not found at {self.path}. Run: tissue init-db")
 
     async def upsert_repo(self, repo: RepoRecord) -> None:
@@ -69,7 +76,7 @@ class Database:
             "collected_at": now,
         }
         stmt = (
-            insert(Repo)
+            dialect_insert(Repo)
             .values(**values)
             .on_conflict_do_update(
                 index_elements=[Repo.full_name],
@@ -116,7 +123,7 @@ class Database:
             "collected_at": now,
         }
         stmt = (
-            insert(Issue)
+            dialect_insert(Issue)
             .values(**values)
             .on_conflict_do_update(
                 index_elements=[Issue.repo_id, Issue.number],

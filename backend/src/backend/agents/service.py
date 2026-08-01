@@ -1,21 +1,19 @@
-"""Agent runtime with SQLite checkpointer."""
+"""Agent runtime with Postgres or SQLite checkpointer."""
 
 from __future__ import annotations
 
 import uuid
-from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from langchain_core.messages import HumanMessage
 from langgraph.checkpoint.base import BaseCheckpointSaver
-from langgraph.checkpoint.sqlite.aio import AsyncSqliteSaver
 
+from backend.agents.checkpointer import checkpointer_lifespan
 from backend.agents.graph import build_initial_message, create_issue_agent, extract_reply_text
 from backend.db.chat_repository import fetch_chat_thread
 from backend.db.chat_store import add_chat_message, create_chat_thread, touch_chat_thread
 from backend.db.engine import get_session_maker
 from backend.db.repository import fetch_issue
-from backend.settings import get_settings
 
 
 class AgentService:
@@ -105,27 +103,18 @@ class AgentService:
             )
 
 
-_checkpointer_cm: AsyncIterator[AsyncSqliteSaver] | None = None
-_checkpointer: AsyncSqliteSaver | None = None
 _agent_service: AgentService | None = None
 
 
 @asynccontextmanager
 async def agent_lifespan():
-    global _checkpointer_cm, _checkpointer, _agent_service
-    settings = get_settings()
-    settings.resolved_checkpoint_db_path.parent.mkdir(parents=True, exist_ok=True)
-    _checkpointer_cm = AsyncSqliteSaver.from_conn_string(str(settings.resolved_checkpoint_db_path))
-    _checkpointer = await _checkpointer_cm.__aenter__()
-    _agent_service = AgentService(_checkpointer)
-    try:
-        yield _agent_service
-    finally:
-        if _checkpointer_cm is not None:
-            await _checkpointer_cm.__aexit__(None, None, None)
-        _checkpointer_cm = None
-        _checkpointer = None
-        _agent_service = None
+    global _agent_service
+    async with checkpointer_lifespan() as checkpointer:
+        _agent_service = AgentService(checkpointer)
+        try:
+            yield _agent_service
+        finally:
+            _agent_service = None
 
 
 def get_agent_service() -> AgentService:

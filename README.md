@@ -1,6 +1,6 @@
 # tissue-bot
 
-Agentic system for collecting GitHub repository and issue data, storing it locally in SQLite, and analysing/resolving issues with agents.
+Agentic system for collecting GitHub repository and issue data, storing it locally, and analysing/resolving issues with agents.
 
 ## Quick start
 
@@ -69,13 +69,59 @@ Linting uses [Ruff](https://docs.astral.sh/ruff/) on `backend/src/` via pre-comm
 cd backend && uv sync --group dev && pytest
 ```
 
+## LLM / agent
+
+Issue-resolution chat uses **Anthropic** (Cloud Run) or **Ollama** (local) via LangGraph:
+
+| `LLM_PROVIDER` | Behaviour |
+|----------------|-----------|
+| `auto` (default) | Anthropic when `ANTHROPIC_API_KEY` is set, otherwise Ollama |
+| `anthropic` | Requires `ANTHROPIC_API_KEY` |
+| `ollama` | Local Ollama server (`OLLAMA_BASE_URL`, default `http://127.0.0.1:11434`) |
+
+## Database
+
+SQLite (`backend/data/tissue-bot.db`) by default, or **Postgres / Supabase** when `DATABASE_URL` is set:
+
+```bash
+# Local Supabase stack (Postgres + Studio)
+docker compose -f docker-compose.yml -f docker-compose.supabase.yml up --build
+
+# Production — point at Supabase (database name must be postgres)
+DATABASE_URL=postgresql://postgres:password@db.xxx.supabase.co:5432/postgres
+DATABASE_SCHEMA=tissue-bot
+```
+
+LangGraph checkpoints use the same Postgres instance (schema isolation via `DATABASE_SCHEMA`).
+
+## Docker
+
+| Mode | Command | URLs |
+| ---- | ------- | ---- |
+| **Split** (default) | `docker compose up --build` | API `:8000`, UI `:3000` |
+| **Split + Postgres** | `docker compose -f docker-compose.yml -f docker-compose.supabase.yml up --build` | API `:8000`, UI `:3000`, Studio `:54323` |
+| **Bundled** (Cloud Run-style) | `docker compose -f docker-compose.bundled.yml up --build` | App `:8000` (FastAPI + static UI) |
+| **Bundled + Postgres** | `docker compose -f docker-compose.bundled.yml -f docker-compose.supabase.yml up --build` | App `:8000`, Studio `:54323` |
+
+Split mode keeps Next.js on its own port for future scaling. Bundled mode serves the Next.js static export from FastAPI (`STATIC_DIR`).
+
+## Cloud Run
+
+Push to `main` triggers `.github/workflows/deploy.yml` (bundled root `Dockerfile`).
+
+Before first deploy:
+
+1. Add `kurtc3b3/tissue-bot` to GitHub WIF provider
+2. Create GCP secrets: `SECRET`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `GITHUB_TOKEN`
+3. Deploy sets `DATABASE_SCHEMA=tissue-bot`, `LLM_PROVIDER=anthropic`, `STATIC_DIR=/app/static`
+
 ## Roadmap
 
 - [x] gh CLI scripts + SQLite schema
 - [x] Tracked scientific library repos
 - [x] Python backend (uv + httpx + SQLAlchemy async + FastAPI)
 - [x] Next.js frontend (auth, repos & issues tables, collect/scrape)
-- [x] LangGraph issue-resolution agent (Ollama + SQLite checkpointer)
+- [x] LangGraph issue-resolution agent (Ollama / Anthropic + Postgres checkpointer)
 - [ ] GitHub commit/PR cycle for saved resolutions
 - [ ] Analysis agent with visualisations
 - [ ] Issue resolution agent

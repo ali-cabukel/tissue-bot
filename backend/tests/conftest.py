@@ -31,7 +31,7 @@ def _reset_engine_and_settings(monkeypatch: pytest.MonkeyPatch, tmp_path):
 
 @pytest_asyncio.fixture
 async def db_session() -> AsyncIterator[AsyncSession]:
-    engine = create_engine(get_settings().resolved_db_path)
+    engine = create_engine()
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
 

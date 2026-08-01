@@ -54,6 +54,22 @@ export interface CollectResult {
   message: string;
 }
 
+export interface TrackedRepo {
+  full_name: string;
+  collected: boolean;
+}
+
+export interface TrackedRepos {
+  source_file: string;
+  items: TrackedRepo[];
+  count: number;
+}
+
+export interface CollectTrackedResult {
+  collected: number;
+  message: string;
+}
+
 export interface PaginatedRepos {
   items: Repo[];
   limit: number;

@@ -55,10 +55,10 @@ tissue-api
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/auth/register` | Register user |
-| POST | `/auth/jwt/login` | Login (form: username=email, password) |
-| POST | `/auth/jwt/logout` | Logout |
-| GET | `/users/me` | Current user |
+| POST | `/api/auth/register` | Register user |
+| POST | `/api/auth/jwt/login` | Login (form: username=email, password) |
+| POST | `/api/auth/jwt/logout` | Logout |
+| GET | `/api/users/me` | Current user |
 
 All data routes require `Authorization: Bearer <token>`.
 
@@ -66,17 +66,19 @@ All data routes require `Authorization: Bearer <token>`.
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/repos/{owner}/{repo}/collect` | Fetch from GitHub and store |
-| GET | `/repos` | List stored repos |
-| GET | `/repos/{owner}/{repo}` | Get stored repo |
+| POST | `/api/repos/{owner}/{repo}/collect` | Fetch from GitHub and store |
+| GET | `/api/repos` | List stored repos |
+| GET | `/api/repos/{owner}/{repo}` | Get stored repo |
+| GET | `/api/repos/tracked` | List default scientific library repos |
+| POST | `/api/repos/collect-tracked` | Batch-collect tracked repos |
 
 ### Issues
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/repos/{owner}/{repo}/issues/collect` | Fetch from GitHub and store |
-| GET | `/repos/{owner}/{repo}/issues` | List stored issues |
-| GET | `/repos/{owner}/{repo}/issues/{number}` | Get stored issue |
+| POST | `/api/repos/{owner}/{repo}/issues/collect` | Fetch from GitHub and store |
+| GET | `/api/repos/{owner}/{repo}/issues` | List stored issues |
+| GET | `/api/repos/{owner}/{repo}/issues/{number}` | Get stored issue |
 
 Query params for collect: `state` (open/closed), `limit`. For list: `state`, `limit`, `offset`.
 
@@ -91,13 +93,13 @@ ollama serve
 
 | Method | Path | Description |
 |--------|------|-------------|
-| POST | `/chat/threads` | Create chat thread (optional issue context) |
-| GET | `/chat/threads` | List chat threads |
-| GET | `/chat/threads/{id}/messages` | List messages |
-| POST | `/chat/threads/{id}/messages` | Send message to agent |
-| GET | `/resolutions` | List/search saved resolutions |
-| GET | `/resolutions/{id}` | Get resolution |
-| POST | `/repos/{owner}/{repo}/issues/{number}/resolve` | Run agent to propose local fix |
+| POST | `/api/chat/threads` | Create chat thread (optional issue context) |
+| GET | `/api/chat/threads` | List chat threads |
+| GET | `/api/chat/threads/{id}/messages` | List messages |
+| POST | `/api/chat/threads/{id}/messages` | Send message to agent |
+| GET | `/api/resolutions` | List/search saved resolutions |
+| GET | `/api/resolutions/{id}` | Get resolution |
+| POST | `/api/repos/{owner}/{repo}/issues/{number}/resolve` | Run agent to propose local fix |
 
 Agent tools search stored repos/issues and save resolutions locally (no GitHub PR yet).
 Conversation state is checkpointed in SQLite (`backend/data/langgraph-checkpoints.db`).
@@ -105,18 +107,18 @@ Conversation state is checkpointed in SQLite (`backend/data/langgraph-checkpoint
 ### Example
 
 ```bash
-curl -X POST http://127.0.0.1:8000/auth/register \
+curl -X POST http://127.0.0.1:8000/api/auth/register \
   -H "Content-Type: application/json" \
   -d '{"email":"you@example.com","password":"your-secure-password"}'
 
-TOKEN=$(curl -s -X POST http://127.0.0.1:8000/auth/jwt/login \
+TOKEN=$(curl -s -X POST http://127.0.0.1:8000/api/auth/jwt/login \
   -H "Content-Type: application/x-www-form-urlencoded" \
   -d "username=you@example.com&password=your-secure-password" | jq -r .access_token)
 
-curl -X POST http://127.0.0.1:8000/repos/numpy/numpy/collect \
+curl -X POST http://127.0.0.1:8000/api/repos/numpy/numpy/collect \
   -H "Authorization: Bearer $TOKEN"
 
-curl http://127.0.0.1:8000/repos/numpy/numpy \
+curl http://127.0.0.1:8000/api/repos/numpy/numpy \
   -H "Authorization: Bearer $TOKEN"
 ```
 

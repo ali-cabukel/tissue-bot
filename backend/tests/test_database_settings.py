@@ -1,6 +1,14 @@
 """Tests for database URL and schema settings."""
 
+from backend.agents.checkpointer import _postgres_conn_string
 from backend.settings import Settings
+
+
+def test_postgres_conn_string_uses_libpq_format():
+    settings = Settings(
+        DATABASE_URL="postgresql://user:pass@localhost:5432/postgres",
+    )
+    assert _postgres_conn_string(settings) == "postgresql://user:pass@localhost:5432/postgres"
 
 
 def test_default_uses_sqlite():
@@ -19,11 +27,11 @@ def test_postgresql_url_normalized_to_asyncpg():
     assert not settings.is_sqlite
 
 
-def test_sync_database_url_uses_psycopg_for_postgres():
+def test_sync_database_url_uses_libpq_format_for_postgres():
     settings = Settings(
         DATABASE_URL="postgresql://user:pass@localhost:5432/postgres",
     )
-    assert settings.sync_database_url == "postgresql+psycopg://user:pass@localhost:5432/postgres"
+    assert settings.sync_database_url == "postgresql://user:pass@localhost:5432/postgres"
 
 
 def test_database_schema_trimmed():

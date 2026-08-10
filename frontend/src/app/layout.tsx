@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 
-import { Navbar } from "@/components/navbar";
-import { AuthProvider } from "@/contexts/auth-context";
+import { AppShell } from "@/components/layout/app-shell";
+import { Providers } from "@/components/providers";
 
 import "./globals.css";
 
@@ -18,8 +18,24 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "tissue-bot",
-  description: "Collect and browse GitHub repository and issue data",
+  description: "Collect GitHub repositories and issues, and resolve them with an agent",
 };
+
+/**
+ * Applies the stored theme before first paint so a dark-mode user never sees a
+ * white flash. Mirrors the logic in `src/lib/theme.ts`.
+ */
+const themeScript = `
+(function () {
+  try {
+    var stored = localStorage.getItem("tissue-bot-theme");
+    var theme = stored === "light" || stored === "dark" ? stored
+      : (window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.style.colorScheme = theme;
+  } catch (e) {}
+})();
+`;
 
 export default function RootLayout({
   children,
@@ -29,13 +45,16 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+      suppressHydrationWarning
     >
-      <body className="min-h-full flex flex-col bg-zinc-50 text-zinc-900 dark:bg-zinc-950 dark:text-zinc-100">
-        <AuthProvider>
-          <Navbar />
-          {children}
-        </AuthProvider>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body>
+        <Providers>
+          <AppShell>{children}</AppShell>
+        </Providers>
       </body>
     </html>
   );

@@ -59,7 +59,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setToken(access_token);
       const currentUser = await api.getCurrentUser();
       setUser(currentUser);
-      router.push("/repos");
+      router.push("/");
     },
     [router],
   );

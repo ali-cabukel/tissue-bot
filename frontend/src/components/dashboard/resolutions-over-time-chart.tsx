@@ -1,0 +1,127 @@
+"use client";
+
+import {
+  Area,
+  AreaChart,
+  CartesianGrid,
+  Legend,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
+
+import type { ResolutionsOverTimePoint } from "@/lib/ui-api";
+
+const series = [
+  { key: "proposed", color: "var(--color-status-proposed)" },
+  { key: "analysing", color: "var(--color-status-analysing)" },
+  { key: "pending", color: "var(--color-status-pending)" },
+  { key: "failed", color: "var(--color-status-failed)" },
+] as const;
+
+function ChartTooltip({
+  active,
+  payload,
+  label,
+}: {
+  active?: boolean;
+  payload?: { name?: string; value?: number; color?: string }[];
+  label?: string;
+}) {
+  if (!active || !payload?.length) return null;
+  return (
+    <div className="rounded-md border border-border bg-popover px-3 py-2 text-xs shadow-raised">
+      <p className="font-medium text-popover-foreground">{label}</p>
+      <ul className="mt-1.5 space-y-1">
+        {payload.map((entry) => (
+          <li key={entry.name} className="flex items-center gap-2 text-muted-foreground">
+            <span
+              className="size-2 rounded-sm"
+              style={{ backgroundColor: entry.color }}
+              aria-hidden
+            />
+            <span className="capitalize">{entry.name}</span>
+            <span className="num ml-auto font-medium text-popover-foreground">
+              {entry.value}
+            </span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  );
+}
+
+export function ResolutionsOverTimeChart({
+  data,
+}: {
+  data: ResolutionsOverTimePoint[];
+}) {
+  return (
+    <div className="h-[300px] w-full">
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={data} margin={{ top: 4, right: 8, bottom: 24, left: 0 }}>
+          <CartesianGrid
+            stroke="var(--color-chart-grid)"
+            strokeDasharray="2 4"
+            vertical={false}
+          />
+          <XAxis
+            dataKey="label"
+            stroke="var(--color-border-strong)"
+            tickLine={false}
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+            label={{
+              value: "Date generated",
+              position: "insideBottom",
+              offset: -16,
+              fill: "var(--color-muted-foreground)",
+              fontSize: 11,
+            }}
+          />
+          <YAxis
+            stroke="var(--color-border-strong)"
+            tickLine={false}
+            allowDecimals={false}
+            width={44}
+            tick={{ fill: "var(--color-muted-foreground)", fontSize: 11 }}
+            label={{
+              value: "Resolutions",
+              angle: -90,
+              position: "insideLeft",
+              fill: "var(--color-muted-foreground)",
+              fontSize: 11,
+            }}
+          />
+          <Tooltip
+            content={<ChartTooltip />}
+            cursor={{ stroke: "var(--color-border-strong)", strokeDasharray: "2 4" }}
+          />
+          <Legend
+            verticalAlign="top"
+            align="right"
+            height={28}
+            iconType="square"
+            iconSize={8}
+            formatter={(value) => (
+              <span className="text-xs capitalize text-muted-foreground">{value}</span>
+            )}
+          />
+          {series.map((item) => (
+            <Area
+              key={item.key}
+              type="monotone"
+              dataKey={item.key}
+              name={item.key}
+              stackId="status"
+              stroke={item.color}
+              strokeWidth={1.5}
+              fill={item.color}
+              fillOpacity={0.14}
+            />
+          ))}
+        </AreaChart>
+      </ResponsiveContainer>
+    </div>
+  );
+}

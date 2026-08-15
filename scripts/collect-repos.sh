@@ -8,7 +8,7 @@
 #   ./scripts/collect-repos.sh repo OWNER/REPO
 #
 # Examples:
-#   ./scripts/collect-repos.sh user kurtc3b3 --limit 50
+#   ./scripts/collect-repos.sh user ali-cabukel --limit 50
 #   ./scripts/collect-repos.sh org github --limit 20
 #   ./scripts/collect-repos.sh search "stars:>100 language:python" --limit 10
 #   ./scripts/collect-repos.sh repo numpy/numpy

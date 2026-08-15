@@ -6,7 +6,7 @@
 #
 # Examples:
 #   ./scripts/collect-issues.sh codecrafters-io/build-your-own-x --limit 50
-#   ./scripts/collect-issues.sh kurtc3b3/tissue-bot --state all
+#   ./scripts/collect-issues.sh ali-cabukel/tissue-bot --state all
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"

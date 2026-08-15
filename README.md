@@ -118,7 +118,7 @@ After the first deploy, run **Collect tracked repos** manually in GitHub Actions
 
 Before first deploy:
 
-1. Add `kurtc3b3/tissue-bot` to GitHub WIF provider
+1. Add `ali-cabukel/tissue-bot` to GitHub WIF provider
 2. Create GCP secrets: `SECRET`, `ANTHROPIC_API_KEY`, `DATABASE_URL`, `GITHUB_TOKEN`
 3. Deploy sets `DATABASE_SCHEMA=tissue-bot`, `LLM_PROVIDER=anthropic`, `STATIC_DIR=/app/static`
 

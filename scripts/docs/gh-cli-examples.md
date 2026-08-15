@@ -35,7 +35,7 @@ gh auth switch
 ### List repos for a user
 
 ```bash
-gh repo list kurtc3b3 --limit 50 --json \
+gh repo list ali-cabukel --limit 50 --json \
   name,description,url,stargazerCount,forkCount,primaryLanguage,updatedAt,isPrivate,isFork
 ```
 
@@ -48,7 +48,7 @@ gh repo list github --limit 20 --json name,url,stargazerCount,primaryLanguage
 ### View a single repo (rich metadata)
 
 ```bash
-gh repo view kurtc3b3/tissue-bot --json \
+gh repo view ali-cabukel/tissue-bot --json \
   name,description,url,stargazerCount,forkCount,primaryLanguage,createdAt,updatedAt,pushedAt,\
 isPrivate,owner,defaultBranchRef,isArchived,isFork,licenseInfo,repositoryTopics
 ```
@@ -185,7 +185,7 @@ We provide wrapper scripts that call `gh` and insert into `backend/data/tissue-b
 ./scripts/init-db.sh
 
 # Collect repos
-./scripts/collect-repos.sh user kurtc3b3 --limit 50
+./scripts/collect-repos.sh user ali-cabukel --limit 50
 ./scripts/collect-repos.sh org github --limit 20
 ./scripts/collect-repos.sh search "stars:>100 language:python" --limit 10
 ./scripts/collect-repos.sh repo numpy/numpy
@@ -196,7 +196,7 @@ We provide wrapper scripts that call `gh` and insert into `backend/data/tissue-b
 
 # Collect issues for a repo
 ./scripts/collect-issues.sh numpy/numpy --limit 50
-./scripts/collect-issues.sh kurtc3b3/tissue-bot --state all
+./scripts/collect-issues.sh ali-cabukel/tissue-bot --state all
 ```
 
 ---

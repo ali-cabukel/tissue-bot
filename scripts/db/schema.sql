@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS issue_labels (
 CREATE TABLE IF NOT EXISTS sync_log (
     id              INTEGER PRIMARY KEY AUTOINCREMENT,
     entity_type     TEXT NOT NULL,  -- repo, issue, search
-    entity_ref      TEXT NOT NULL,  -- e.g. kurtc3b3/tissue-bot or search query
+    entity_ref      TEXT NOT NULL,  -- e.g. ali-cabukel/tissue-bot or search query
     status          TEXT NOT NULL,  -- ok, error
     message         TEXT,
     synced_at       TEXT NOT NULL DEFAULT (datetime('now'))

@@ -7,7 +7,7 @@
 #   docker compose -f docker-compose.bundled.yml -f docker-compose.supabase.yml up --build
 
 services:
-  tissue-bot:
+  backend:
     build:
       context: .
       dockerfile: Dockerfile
